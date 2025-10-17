@@ -1,0 +1,21 @@
+Ignore the SQLite database file
+
+It's better for collaborators to create their own local database
+gas_stations.db
+
+Python virtual environment
+
+venv/
+*.venv
+
+Python cache
+
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+IDE-specific files
+
+.idea/
+.vscode/
