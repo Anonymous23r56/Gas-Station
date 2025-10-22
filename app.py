@@ -10,7 +10,12 @@ DATABASE = 'gas_stations.db'
 # --- App Initialization ---
 app = Flask(__name__)
 # Enable CORS to allow the frontend to make requests from a different origin
-CORS(app) 
+ 
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "https://gas-finder.netlify.app/" 
+    }
+})
 
 # --- Database Helper Functions ---
 
