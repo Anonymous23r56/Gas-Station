@@ -1,8 +1,25 @@
 import sqlite3
 import os
 import math
+import datetime
 from flask import Flask, jsonify, request, g
 from flask_cors import CORS
+
+# Register adapters and converters for TIMESTAMP to avoid the deprecated
+# default timestamp converter behavior in Python 3.12+
+# Store datetimes as 'YYYY-MM-DD HH:MM:SS' and convert back to datetime
+sqlite3.register_adapter(datetime.datetime, lambda val: val.strftime("%Y-%m-%d %H:%M:%S"))
+def _convert_timestamp(bytestr):
+    if bytestr is None:
+        return None
+    s = bytestr.decode()
+    try:
+        # Most likely format produced by CURRENT_TIMESTAMP in SQLite
+        return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        # Fallback to fromisoformat if it's in ISO format
+        return datetime.datetime.fromisoformat(s)
+sqlite3.register_converter("timestamp", _convert_timestamp)
 
 # --- Configuration ---
 DATABASE = 'gas_stations.db'
@@ -20,9 +37,11 @@ def get_db():
     current application context.
     """
     if 'db' not in g:
+        # Enable PARSE_DECLTYPES and PARSE_COLNAMES so registered converters
+        # (like the 'timestamp' converter above) are applied.
         g.db = sqlite3.connect(
             DATABASE,
-            detect_types=sqlite3.PARSE_DECLTYPES
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
         )
         # This allows us to access columns by name (like a dictionary)
         g.db.row_factory = sqlite3.Row
@@ -261,17 +280,9 @@ def delete_station(station_id):
     return jsonify({"message": "Gas station deleted successfully"}), 200
 
 
-# --- Main execution block ---
-if __name__ == '__main__':
-    # Initialize the DB if it doesn't exist when the app starts
-    with app.app_context():
-        if not os.path.exists(DATABASE):
-            init_db()
-            print(f"'{DATABASE}' created.")
-        else:
-            print(f"'{DATABASE}' already exists.")
-            
-    # Run the Flask app
-    # host='0.0.0.0' makes it accessible from any device on your network
-    app.run(debug=True, host='0.0.0.0', port=5000)
+# Serve a minimal response for favicon requests so browsers stop requesting it
+@app.route('/favicon.ico')
+def favicon():
+    # No content; returning 204 avoids a 404 in the logs when no favicon is present
+    return ('', 204)
 
