@@ -6,6 +6,11 @@ import ChartModal from "./Components/ChartModal";
 import SignUp from "./Components/SignUp";
 import { gasFinderApi } from "./api/gasFinderApi";
 
+//
+const PROD_BACKEND_URL = "https://gas-station-mnar.onrender.com"; 
+// Example: "https://gas-finder-backend.onrender.com"
+//
+
 const App = () => {
   const [gasStations, setGasStations] = useState([]);
   const [loading, setLoading] = useState(true);
