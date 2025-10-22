@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Ignore the SQLite database file
 
 It's better for collaborators to create their own local database
@@ -18,4 +19,26 @@ pycache/
 IDE-specific files
 
 .idea/
+=======
+Ignore the SQLite database file
+
+It's better for collaborators to create their own local database
+gas_stations.db
+
+Python virtual environment
+
+venv/
+*.venv
+
+Python cache
+
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+IDE-specific files
+
+.idea/
+>>>>>>> 617270bc5430eb293a4dae146ff16e87ac21c67c
 .vscode/
