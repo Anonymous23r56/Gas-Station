@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { gasFinderApi } from "../api/gasFinderApi";
+// import { gasFinderApi } from "../api/gasFinderApi"; // No longer needed, we'll use fetch
+
+// --- Use the same live URL from your App.jsx ---
+const PROD_BACKEND_URL = "https://gas-station-mnar.onrender.com";
 
 function SellerSignUpModal({ onClose, onSignUpSuccess }) {
   const [formData, setFormData] = useState({
@@ -11,6 +14,9 @@ function SellerSignUpModal({ onClose, onSignUpSuccess }) {
     longitude: "",
     pricePerKg: "",
   });
+  
+  // --- NEW: State to hold any registration errors ---
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     setFormData({
@@ -21,19 +27,51 @@ function SellerSignUpModal({ onClose, onSignUpSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null); // Clear any previous errors
 
-    console.log("Seller data:", formData);
-
-    const response = await gasFinderApi.createStation({
+    // This is the data your backend expects
+    const stationData = {
       name: formData.stationName,
       address: formData.address,
       latitude: parseFloat(formData.latitude),
       longitude: parseFloat(formData.longitude),
       price_kg: parseFloat(formData.pricePerKg),
-      status: "Open",
-    });
+      status: "Open", // Default to "Open"
+      // Note: Your backend doesn't save ownerName or phone yet,
+      // but that's okay. We're still sending the required data.
+    };
 
-    onSignUpSuccess();
+    console.log("Sending seller data:", stationData);
+
+    try {
+      // --- UPDATED: Use fetch to POST to your live URL ---
+      const response = await fetch(`${PROD_BACKEND_URL}/api/stations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(stationData),
+      });
+
+      if (!response.ok) {
+        // If the server returns an error (like 400 or 500)
+        const errorData = await response.json();
+        console.error("Failed to register station:", errorData);
+        setError(errorData.error || "Failed to register. Please try again.");
+        return; // Stop the function here
+      }
+
+      // If we are here, it was successful!
+      const newStation = await response.json();
+      console.log("Successfully registered:", newStation);
+      
+      onSignUpSuccess(); // This closes the modal and shows the chat
+
+    } catch (err) {
+      // This catches network errors (e.g., backend is down)
+      console.error("Error in handleSubmit:", err);
+      setError("A network error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -44,7 +82,7 @@ function SellerSignUpModal({ onClose, onSignUpSuccess }) {
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
         >
-          ×
+          &times;
         </button>
 
         {/* Header */}
@@ -180,6 +218,13 @@ function SellerSignUpModal({ onClose, onSignUpSuccess }) {
               here?" to see the coordinates.
             </p>
           </div>
+
+          {/* --- NEW: Error message display --- */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
