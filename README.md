@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Gas-Station
 A simple backend API for a gas station finder application, built with Python, Flask, and SQLite. Provides CRUD operations and a 'find nearby' feature
 =======
@@ -225,4 +225,4 @@ Backend Developer | Tech Enthusiast
 
 
 
->>>>>>> 617270bc5430eb293a4dae146ff16e87ac21c67c
+
